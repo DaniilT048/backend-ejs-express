@@ -25,3 +25,11 @@ const articles = [
         "url": "https://daveceddia.com/avoid-bind-when-passing-props/"
     }
 ]
+
+export const getArticles = () => {
+    return articles;
+}
+
+export const getArticleById = (id) => {
+    return articles.find(articles => articles.id === Number(id));
+}
