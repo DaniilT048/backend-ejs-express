@@ -3,6 +3,7 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import {getArticleById, getArticles} from "../services/articlesServices.js";
+import favicon from 'serve-favicon';
 
 const PORT = 4000;
 const app = express();
@@ -13,6 +14,7 @@ const __dirname = path.dirname(__filename);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
 app.use(express.static(path.join(__dirname, '../public')));
+app.use(favicon(path.join(__dirname, '../public/favicon.ico')));
 
 app.use(cors({
     origin: true,
