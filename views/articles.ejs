@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <title>Articles</title>
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/styles-<%=`${theme}`%>.css" />
 </head>
 <body>
 <h1>Articles</h1>
+<a href="/set-theme/light">Light theme</a>
+<a href="/set-theme/dark">Dark theme</a>
     <% if (articles && articles.length > 0) { %>
         <% articles.forEach(article => { %>
             <div class="article-card">

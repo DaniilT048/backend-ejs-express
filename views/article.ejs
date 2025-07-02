@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8" />
     <title>Article</title>
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/styles-<%=`${theme}`%>.css" />
 </head>
 <body>
+
 <div class="article-page">
+    <a href="/set-theme/light">Light theme</a>
+    <a href="/set-theme/dark">Dark theme</a>
     <h1><%= article.title %></h1>
     <p><%= article.author %></p>
     <a href=<%= article.url %>>Click</a>
