@@ -6,6 +6,7 @@ import {getArticleById, getArticles} from "../services/articlesServices.js";
 import favicon from 'serve-favicon';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
+import { users, addUser, findUser } from '../services/usersServices.js';
 
 const PORT = 4000;
 const app = express();
@@ -21,45 +22,95 @@ app.use(cookieParser());
 app.use(cors({
     origin: true,
 }));
-
+app.use(express.urlencoded({ extended: true }));
 app.use(session({
     secret: 'secret-key',
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false }
 }));
-
 app.use(express.json());
 
-
-app.get('/', (req, res) => {
-    const theme = req.cookies.theme || 'light';
-    res.render('index', { theme });
+app.use((req, res, next) => {
+    res.locals.theme = req.cookies.theme || 'light';
+    next();
 });
 
-app.get('/articles', (req, res) => {
+
+function requireAuth(req, res, next) {
+    if (!req.session.user) {
+        req.session.message = 'You need login';
+        return res.redirect('/login');
+    }
+    next();
+}
+
+app.get('/', requireAuth, (req, res) => {
+    res.render('index');
+});
+
+app.get('/articles', requireAuth, (req, res) => {
     const articles = getArticles();
-    const theme = req.cookies.theme || 'light';
-    res.render('articles', { articles, theme });
+    res.render('articles', { articles } );
 })
 
-app.get('/articles/:id', (req, res) => {
+app.get('/articles/:id', requireAuth, (req, res) => {
     const article = getArticleById(req.params.id);
-    const theme = req.cookies.theme || 'light';
     if (!article) return res.status(404).send('Article is not found');
-    res.render('article', {article, theme});
+    res.render('article', { article });
 });
 
 app.get('/set-theme/:theme', (req, res) => {
     const { theme } = req.params;
 
     if (['light', 'dark'].includes(theme)) {
-        res.cookie('theme', theme, { maxAge: 7 * 24 * 60 * 60 * 1000 }); // 7 дней
+        res.cookie('theme', theme, { maxAge: 7 * 24 * 60 * 60 * 1000 });
         req.session.theme = theme;
     }
 
-    res.redirect(req.get('Referer'));
+    res.redirect(req.get('Referer') || '/' );
 });
+
+app.get('/register', (req, res) => {
+    res.render('register');
+});
+
+app.post('/register', (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.send('Name and password is impotent');
+    }
+    if (findUser(username)) {
+        return res.send('User is already exist');
+    }
+    addUser(username, password);
+    res.redirect('/login');
+});
+
+app.get('/login', (req, res) => {
+    const message = req.session.message;
+    req.session.message = null;
+    res.render('login', { theme: res.locals.theme, message });
+});
+
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    const user = users.find(u => u.username === username && u.password === password);
+
+    if (!user) {
+        return res.send('Login or password is incorect');
+    }
+
+    req.session.user = user;
+    res.redirect('/');
+});
+
+app.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/login');
+    });
+});
+
 
 
 app.listen(PORT, () => {
