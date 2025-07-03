@@ -39,13 +39,13 @@ app.use((req, res, next) => {
 
 function requireAuth(req, res, next) {
     if (!req.session.user) {
-        req.session.message = 'You need login';
+        req.session.message = 'You must login to view the articles';
         return res.redirect('/login');
     }
     next();
 }
 
-app.get('/', requireAuth, (req, res) => {
+app.get('/', (req, res) => {
     res.render('index');
 });
 
@@ -78,7 +78,7 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
-        return res.send('Name and password is impotent');
+        return res.send('Name or password are required');
     }
     if (findUser(username)) {
         return res.send('User is already exist');
